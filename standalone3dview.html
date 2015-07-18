@@ -14,7 +14,7 @@
   	</div>
 	<div class="threedview">
 		<div class="progressbars"></div>
-		<div id="viewport"></div>
+		<div id="viewport" style="width: 400px; height: 400px"></div>
 	</div>
 	<script>
 		Global = {};
@@ -386,48 +386,16 @@
 	<script>
 	function ThreeDView(containerDiv) {
 		var o = this;
-		o.selectedId = -1;
 		o.loadedOids = {};
 		o.models = {};
 		
 		this.load = function(){
 			var promise = new Promise();
 			o.viewer = new BIMSURFER.Viewer(Global.bimServerApi, 'viewport');
-			$(window).resize(o.resize);
-			o.resize();
 			o.viewer.loadScene(function(){
-				var clickSelect = o.viewer.getControl("BIMSURFER.Control.ClickSelect");
-				clickSelect.activate();
-				clickSelect.events.register('select', o.nodeSelected);
-				clickSelect.events.register('unselect', o.nodeUnselected);
-				promise.fire();
+
 			}, {useCapture: true});
 			return promise;
-		};
-		
-		this.nodeSelected = function(groupId, node){
-			o.selectedId = node.id;
-		};
-		
-		this.nodeUnselected = function(groupId, node){
-			o.selectedId = -1;
-		};
-		
-		this.selected = function(origin, groupId, id){
-			if (o.selectedId == id) {
-				return;
-			}
-			o.selectedId = id;
-			// todo use groupid		
-			var sceneJsNode = o.viewer.scene.findNode(id);
-			if (sceneJsNode != null) {
-				sceneJsNode.nodeId = sceneJsNode.id;
-				o.viewer.getControl("BIMSURFER.Control.ClickSelect").pick(sceneJsNode);
-			}
-		};
-		
-		this.unselected = function(groupId, id){
-			
 		};
 		
 		this.changeColorOfObject = function(object, color){
@@ -528,9 +496,6 @@
 					color.r = 0.5;
 					color.g = 0.5;
 					color.b = 0.5;
-					if (o.selectedId == object.oid) {
-						threeDObject.getNode("highlight").set("alpha", 0.5);
-					}
 					o.changeColorOfObject(object, color);
 				} else if (mode == 2) {
 					threeDObject.findParentByType("enable").setEnabled(false);
@@ -613,21 +578,12 @@
 						for (var i=0; i<oidsNotLoaded.length; i++) {
 							o.loadedOids[oidsNotLoaded[i]] = true;
 						}
-						o.resize();
 					}
 				});
 				o.viewer.loadGeometry(geometryLoader);
 			}
 		};
 	
-		this.resize = function(){
-			var width = $(window).width();
-			var height = $(window).height();
-			$("div#viewport").width(width + "px");
-			$("div#viewport").height(height + "px");
-			o.viewer.resize($('div#viewport').width(), $('div#viewport').height());
-		};
-		
 		this.unloadRevision = function(poid, roid) {
 			if (roid != -1) {
 				var node = o.viewer.scene.findNode("model_node_" + roid);
