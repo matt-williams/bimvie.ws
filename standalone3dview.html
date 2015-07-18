@@ -12,17 +12,103 @@
 			<div class="message"></div>
 		</div>
   	</div>
+	<span onclick="up();">Up</span>
+	<span onclick="down();">Down</span>
+	<span onclick="choose(0);">A</span>
+	<span onclick="choose(1);">B</span>
 	<div id="threedview" style="width: 400px; height: 400px"></div>
 	<script src="bimviews/js/3dview.js"></script>
 	<script type="text/javascript">
-		Global.onInitialized = function() {
-			threedView = new ThreeDView($("#threedview"));
-			threedView.load();
-			threedView.loadProject(720897);
-			threedView.showProject(720897);
-			threedView.loadProject(786433);
-			threedView.showProjectGray(786433);
+var GROUND_FLOOR_A = 1179649;
+var GROUND_FLOOR_B = 1245185;
+var FIRST_FLOOR = 1114113;
+var ROOF_A = 1310721;
+var ROOF_B = 1376257;
+
+var focus = 0;
+var options = [0, -1, -1];
+
+function up() {
+	focus = (focus < 2) ? focus + 1 : 2;
+	options[focus] = options[focus] == -1 ? 0 : options[focus];
+	update();
+}
+
+function down() {
+	focus = (focus > 0) ? focus - 1 : 0;
+	update();
+}
+
+function choose(choice) {
+	options[focus] = choice;
+	update()
+}
+
+function update() {
+	if (options[0] == 0) {
+		threedView.showProject(GROUND_FLOOR_A);
+		threedView.hideProject(GROUND_FLOOR_B);
+	} else if (options[0] == 1) {
+		threedView.hideProject(GROUND_FLOOR_A);
+		threedView.showProject(GROUND_FLOOR_B);
+	} else {
+		threedView.hideProject(GROUND_FLOOR_A);
+		threedView.hideProject(GROUND_FLOOR_B);
+	}
+
+	if (focus >= 1) {
+		if (options[1] == 0) {
+			threedView.showProject(FIRST_FLOOR);
+		} else {
+			threedView.hideProject(FIRST_FLOOR);
 		}
+	} else {
+/*
+		if (options[1] == 0) {
+			threedView.showProjectGray(FIRST_FLOOR);
+		} else {
+*/
+			threedView.hideProject(FIRST_FLOOR);
+//		}
+	}
+
+	if (focus >= 2) {
+		if (options[2] == 0) {
+			threedView.showProject(ROOF_A);
+			threedView.hideProject(ROOF_B);
+		} else if (options[2] == 1) {
+			threedView.hideProject(ROOF_A);
+			threedView.showProject(ROOF_B);
+		} else {
+			threedView.hideProject(ROOF_A);
+			threedView.hideProject(ROOF_B);
+		}
+	} else {
+/*
+		if (options[2] == 0) {
+			threedView.showProjectGray(ROOF_A);
+			threedView.hideProject(ROOF_B);
+		} else if (options[2] == 1) {
+			threedView.hideProject(ROOF_A);
+			threedView.showProjectGray(ROOF_B);
+		} else {
+*/
+			threedView.hideProject(ROOF_A);
+			threedView.hideProject(ROOF_B);
+//		}
+	}
+}
+
+Global.onInitialized = function() {
+	threedView = new ThreeDView($("#threedview"));
+	threedView.load();
+	threedView.loadProject(GROUND_FLOOR_A);
+	threedView.loadProject(GROUND_FLOOR_B);
+	threedView.loadProject(FIRST_FLOOR);
+	threedView.loadProject(ROOF_A);
+	threedView.loadProject(ROOF_B);
+	update();
+}
 	</script>
   </body>
 </html>
