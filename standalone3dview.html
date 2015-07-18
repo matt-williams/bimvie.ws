@@ -13,6 +13,7 @@
 		</div>
   	</div>
 	<div class="threedview">
+		<div class="progressbars"></div>
 		<div id="viewport"></div>
 	</div>
 	<script>
@@ -194,12 +195,10 @@
 				    					}
 				    					if (token != null) {
 				    						Global.bimServerApi.setToken(token, function(){
-				    							//$(".indexcontainer").load(Global.baseDir + "3dview.html", function(){
-				    								$(".indexStatus").hide();
-				    								othis.current = new ThreeDView($(this), document.body);
-												othis.current.load();
-												othis.current.changeRevision(131073, 65539, "ifc2x3tc1");
-				    							//});
+				    							$(".indexStatus").hide();
+				    							othis.current = new ThreeDView($(this));
+											othis.current.load();
+											othis.current.changeRevision(131073, 65539, "ifc2x3tc1");
 				    						}, function(){
 				    							$.removeCookie("autologin" + window.document.location.port);
 				    							notLoggedInFunction(address);
@@ -385,7 +384,7 @@
 		myRequest.send();
 	</script>
 	<script>
-	function ThreeDView(containerDiv, parent) {
+	function ThreeDView(containerDiv) {
 		var o = this;
 		o.selectedId = -1;
 		o.loadedOids = {};
@@ -407,12 +406,10 @@
 		};
 		
 		this.nodeSelected = function(groupId, node){
-			parent.selected(o, groupId, node.id);
 			o.selectedId = node.id;
 		};
 		
 		this.nodeUnselected = function(groupId, node){
-			parent.unselected(o, groupId, node.id);
 			o.selectedId = -1;
 		};
 		
@@ -432,71 +429,6 @@
 		this.unselected = function(groupId, id){
 			
 		};
-		
-/*
-		this.setAlternativeColor = function(object, color){
-			o.updateVisibility(object);
-		};
-		
-		this.unsetAlternativeColor = function(object){
-			var threeDObject = o.viewer.scene.findNode(object.oid);
-			if (threeDObject != null) {
-				var matrix = threeDObject.nodes[0];
-				var geometryNode = matrix.nodes[0];
-				if (geometryNode.coreId != null && ("" + geometryNode.coreId).endsWith("_Visualization")) {
-					// This is a complex-material object which had been modified, return it to the old state
-					if (geometryNode._core.arrays.colors != null) {
-						matrix.removeNode(geometryNode);
-						
-						var newGeometry = {
-							type: "geometry",
-							coreId: geometryNode.getCoreId().replace("_Visualization", "")
-						}
-						
-						matrix.addNode(newGeometry);
-					}
-				} else {
-					o.setObjectColor(object);
-				}
-			}
-		};
-		
-		this.setObjectColor = function(object){
-			var threeDObject = o.viewer.scene.findNode(object.oid);
-			var mode = object.trans.mode;
-			if (threeDObject != null) {
-				var matrix = threeDObject.nodes[0];
-				var geometryNode = matrix.nodes[0];
-				var material = BIMSURFER.Constants.materials[object.getType()];
-				// Hack to get the roof to be red.....
-				if (object.getType() == "IfcSlab") {
-					if (object.getPredefinedType() == "ROOF") {
-						material = BIMSURFER.Constants.materials["IfcRoof"];
-					}
-				}
-				
-				var color = {r: material.r, g: material.g, b: material.b, a: material.a};
-	
-				if (mode == 0) {
-					threeDObject.findParentByType("enable").setEnabled(true);
-				} else if (mode == 1) {
-					threeDObject.findParentByType("enable").setEnabled(true);
-					color.a = 0.5;
-					color.r = 0.5;
-					color.g = 0.5;
-					color.b = 0.5;
-					if (o.selectedId == object.oid) {
-						threeDObject.getNode("highlight").set("alpha", 0.5);
-					}
-				} else if (mode == 2) {
-					threeDObject.findParentByType("enable").setEnabled(false);
-					threeDObject.findParentByType("enable").setEnabled(true); //MIRW
-				}
-				
-				o.changeColorOfObject(object, color);
-			}
-		};
-*/
 		
 		this.changeColorOfObject = function(object, color){
 			var threeDObject = o.viewer.scene.findNode(object.oid);
@@ -689,8 +621,6 @@
 		};
 	
 		this.resize = function(){
-			//var width = Math.round($(window).width() / 3 * 2 - 59);
-			//var height = ($(window).height() - $(".navbar").outerHeight() - $(".navbar-header").outerHeight() - $(".right .panel-heading").outerHeight() - 80);
 			var width = $(window).width();
 			var height = $(window).height();
 			$("div#viewport").width(width + "px");
