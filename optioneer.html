@@ -36,12 +36,18 @@
             </li>
         </ul>
     </div>
-
-    <div class="panel panel-default col-md-3">
+    <div class="col-md-3">
+      <div class="panel panel-default">
+          <div class="panel-body">
+              <div id="options-panel"></div>
+              <button type="button" class="next-btn btn btn-primary">Next</button>
+          </div>
+      </div>
+      <div class="panel panel-default">
         <div class="panel-body">
-            <div id="options-panel"></div>
-            <button type="button" class="next-btn btn btn-primary">Next</button>
+          <div id="requirements-panel"></div>
         </div>
+      </div>
     </div>
     <div class="panel panel-default col-md-6">
         <div class="indexStatus statusWrapper">
@@ -85,6 +91,10 @@
             <td>£{{formatCurrency cost}}</td>
         </tr>
         <tr>
+            <th>Energy cost per year</th>
+            <td>£{{formatCurrency energyCost}}</td>
+        </tr>
+        <tr>
             <th>Carbon footprint</th>
             <td>{{formatNumber carbon '0,0.000'}}</td>
         </tr>
@@ -106,15 +116,38 @@
             <th>Window</th>
             <td>{{#if window}}{{window.name}}{{else}}Not yet chosen{{/if}}</td>
         </tr>
-        <tr>
+        <tr class="cost-row">
             <th>Total</th>
             <td>£{{formatCurrency cost}}</td>
         </tr>
-        <tr>
+        <tr class="energy-cost-row">
+            <th>Total energy cost per year</th>
+            <td>£{{formatCurrency energyCost}}</td>
+        </tr>
+        <tr class="carbon-row">
             <th>Carbon Footprint</th>
             <td>{{formatNumber carbon '0,0.000'}}</td>
         </tr>
     </table>
+    <button type="button" class="btn btn-block btn-success">Save my choices</button>
+</script>
+
+<script type="text/x-handlebars-template" id="requirements-template">
+  <h2>Requirements</h2>
+  <form>
+    <div class="form-group">
+      <label for="cost-requirement">Total</label>
+      <input type="text" id="cost-requirement" class="form-control cost-requirement" name="cost" value="200000"/>
+    </div>
+    <div class="form-group">
+      <label for="energy-cost-requirement">Total energy cost per year</label>
+      <input type="text" id="energy-cost-requirement" class="form-control energy-cost-requirement" name="cost" value="2000"/>
+    </div>
+    <div class="form-group">
+      <label for="carbon-requirement">Carbon footprint</label>
+      <input type="text" id="carbon-requirement" class="form-control carbon-requirement" name="cost" value="600"/>
+    </div>
+  </form>
 </script>
 </body>
 </html>

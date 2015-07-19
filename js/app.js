@@ -27,8 +27,9 @@
           name: "Plan 1",
           description: "Plan option 1",
           type: "plan",
-          cost: 1000,
-          carbon: 20494,
+          cost: 100000,
+          energyCost: 598,
+          carbon: 269,
           hasModel: true,
           project: PROJECTS.GROUND_FLOOR[0],
           optionId: 0
@@ -38,8 +39,9 @@
           name: "Plan 2",
           description: "Plan option 2",
           type: "plan",
-          cost: 1200,
-          carbon: 20494,
+          cost: 120000,
+          energyCost: 570,
+          carbon: 280,
           hasModel: true,
           project: PROJECTS.GROUND_FLOOR[1],
           optionId: 1
@@ -50,7 +52,8 @@
           description: "Roof option 1",
           type: "roof",
           cost: 2300,
-          carbon: 20393,
+          energyCost: 872,
+          carbon: 316,
           hasModel: true,
           project: PROJECTS.ROOF[0],
           optionId: 0
@@ -61,7 +64,8 @@
           description: "Roof option 2",
           type: "roof",
           cost: 2139,
-          carbon: 19348,
+          energyCost: 756,
+          carbon: 206,
           hasModel: true,
           project: PROJECTS.ROOF[1],
           optionId: 1
@@ -71,8 +75,9 @@
           name: "Windows 1",
           description: "Windows option 1",
           type: "window",
-          cost: 1000,
-          carbon: 12398,
+          cost: 10000,
+          energyCost: 378,
+          carbon: 58,
           hasModel: false,
           optionId: 0
         },
@@ -81,8 +86,9 @@
           name: "Windows 2",
           description: "Windows option 2",
           type: "window",
-          cost: 1200,
-          carbon: 22398,
+          cost: 8000,
+          energyCost: 504,
+          carbon: 87,
           hasModel: false,
           optionId: 0
         }
@@ -138,24 +144,81 @@
       template: '#choice-info-template'
     });
 
+    var RequirementsView = Backbone.Marionette.ItemView.extend({
+      template: '#requirements-template',
+      ui: {
+        cost: 'input.cost-requirement',
+        energy: 'input.energy-cost-requirement',
+        carbon: 'input.carbon-requirement'
+      },
+      events: {
+        'keyup @ui.cost': 'onCostChange',
+        'keyup @ui.energy': 'onEnergyChange',
+        'keyup @ui.carbon': 'onCarbonChange'
+      },
+      onCostChange: function(){
+        var cost = this.ui.cost.val() || 0;
+        cost = parseFloat(cost);
+        this.model.set('cost', cost);
+      },
+      onEnergyChange: function(){
+        var energy = this.ui.energy.val() || 0;
+        energy = parseFloat(energy);
+        this.model.set('energyCost', energy);
+      },
+      onCarbonChange: function(){
+        var carbon = this.ui.carbon.val() || 0;
+        carbon = parseFloat(carbon);
+        this.model.set('carbon', carbon);
+      }
+    });
+
     var SummaryView = Backbone.Marionette.ItemView.extend({
       template: '#summary-template',
       collectionEvents: {
         add: 'render'
       },
+      initialize: function(){
+        this.listenTo(this.getOption('requirements'), 'change', this.render);
+      },
+      ui: {
+        cost: 'tr.cost-row',
+        energy: 'tr.energy-cost-row',
+        carbon: 'tr.carbon-row'
+      },
       serializeData: function(){
         var data = {
           cost: 0,
+          energyCost: 0,
           carbon: 0
         };
         this.collection.each(function(option){
           data.cost += option.get('cost');
+          data.energyCost += option.get('energyCost');
           data.carbon += option.get('carbon');
           data[option.get('type')] = option.toJSON();
         });
 
         return data;
+      },
+      onRender: function(){
+        var data = this.serializeData();
+        var requirements = this.getOption('requirements');
+        this.ui.cost.toggleClass('success', data.cost <= requirements.get('cost'));
+        this.ui.cost.toggleClass('danger', data.cost > requirements.get('cost'));
+
+        this.ui.energy.toggleClass('success', data.energyCost <= requirements.get('energyCost'));
+        this.ui.energy.toggleClass('danger', data.energyCost > requirements.get('energyCost'));
+
+        this.ui.carbon.toggleClass('success', data.carbon <= requirements.get('carbon'));
+        this.ui.carbon.toggleClass('danger', data.carbon > requirements.get('carbon'));
       }
+    });
+
+    var requirementsModel = new Backbone.Model({
+      cost: 200000,
+      energyCost: 2000,
+      carbon: 600
     });
 
     var MainView = Backbone.Marionette.LayoutView.extend({
@@ -163,6 +226,7 @@
       template: false,
       regions: {
         optionsRegion: '#options-panel',
+        requirementsRegion: '#requirements-panel',
         viewerRegion: '#viewer',
         choiceInfoRegion: '#choice-info',
         summaryRegion: '#summary-panel'
@@ -212,7 +276,7 @@
         }
 
         this.ui.nextBtn.prop('disabled', tab == 'window');
-        
+
       },
       optionSelected: function(option){
         this.choiceInfoRegion.show(new ChoiceInfoView({model: option}));
@@ -239,12 +303,20 @@
         update();
       },
       onRender: function(){
-        this.summaryRegion.show(new SummaryView({collection: myDesignChoices}));
+        this.summaryRegion.show(new SummaryView({
+          collection: myDesignChoices,
+          requirements: this.getOption('requirements')
+        }));
+        this.requirementsRegion.show(new RequirementsView({
+          model: this.getOption('requirements')
+        }));
         this.tabSelected('plan');
       }
     });
 
-    app.mainView = new MainView();
+    app.mainView = new MainView({
+      requirements: requirementsModel
+    });
     app.on('start', function(){
       app.mainView.render();
     });
