@@ -1,0 +1,14 @@
+.viewer {
+    width: 400px;
+    height: 300px;
+    background-color: #CCC;
+    border: 1px solid #CCC;
+}
+
+.choice-info {
+    margin-top: 20px;
+}
+
+.choice-info th {
+    width: 180px;
+}

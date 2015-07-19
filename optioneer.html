@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+  <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+        <title>Viewer</title>
+<html>
+<head>
+    <meta charset="utf-8">
+    <base href="/"/>
+    <title>Design Choices</title>
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="bimviews/css/styles.css">
+    <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash-compat/3.10.0/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.1/backbone.js"></script>
+    <script src="bimviews/js/3dview.js"></script>
+    <script src="bimviews/js/projects.js"></script>
+    <script src="bimviews/js/app.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="design-choices-tabs">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#plan" role="tab"
+                                                      data-toggle="tab">Plan</a>
+            </li>
+            <li role="presentation"><a href="#roof" aria-controls="profile"
+                                       role="tab" data-toggle="tab">Roof</a>
+            </li>
+            <li role="presentation"><a href="#window" aria-controls="messages"
+                                       role="tab" data-toggle="tab">Window</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="panel panel-default col-md-3">
+        <div id="options-panel" class="panel-body">
+        </div>
+    </div>
+    <div class="panel panel-default col-md-6">
+        <div class="indexStatus statusWrapper">
+                <div class="alert status">
+                        <div class="message"></div>
+                </div>
+        </div>
+
+        <div class="panel-body">
+            <div id="threedview" style="width: 100%; height: 400px"></div>
+            <div id="choice-info" class="choice-info">
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default col-md-3">
+        <div id="summary-panel" class="panel-body">
+
+        </div>
+    </div>
+</div>
+
+<script type="x-handlebars-template" id="options-template">
+    {{#each this}}
+    <div>
+        <label>
+            <input type="radio" name="design" value="{{name}}"/> {{name}}
+        </label>
+    </div>
+    {{/each}}
+</script>
+
+<script type="x-handlebars-template" id="choice-info-template">
+    <h2>Choice information</h2>
+    <table class="table">
+        <tr>
+            <th>Name</th>
+            <td>{{name}}</td>
+
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>{{description}}</td>
+        </tr>
+        <tr>
+            <th>Cost</th>
+            <td>{{cost}}</td>
+        </tr>
+        <tr>
+            <th>Carbon footprint</th>
+            <td>{{carbon}}</td>
+        </tr>
+    </table>
+</script>
+
+<script type="text/x-handlebars-template" id="summary-template">
+    <h2>Summary</h2>
+    <table class="table">
+        <tr>
+            <th>Total</th>
+            <td>{{cost}}</td>
+        </tr>
+        <tr>
+            <th>Carbon Footprint</th>
+            <td>{{carbon}}</td>
+        </tr>
+    </table>
+</script>
+</body>
+</html>
