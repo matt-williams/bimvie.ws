@@ -4,7 +4,7 @@
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 	<meta content="utf-8" http-equiv="encoding">
 	<base href="/"/>
-	<title>Viewer</title>
+	<title>Cardboard Viewer</title>
   </head>
   <body style="margin: 0; padding: 0">
   	<div class="indexStatus statusWrapper">
@@ -12,14 +12,10 @@
 			<div class="message"></div>
 		</div>
   	</div>
-	<div id="threedview" style="width: 800px; height: 400px"></div>
+	<div id="threedview" style="width: 1200px; height: 600px"></div>
 	<script src="bimviews/js/3dview.js"></script>
 	<script src="bimviews/js/projects.js"></script>
 	<script type="text/javascript">
-
-function setCamera() {
-	threedView.setCamera({x: -2000, y: 0, z: 12000 + focus * 3000}, {x: 0.2, y: 0, z: -0.98}, 16000);
-}
 
 Global.onInitialized = function() {
 	threedView = new ThreeDView($("#threedview"));
