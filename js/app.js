@@ -1,71 +1,97 @@
 (function (){
 
-  var App = {};
-
   $(function(){
+
+    //configure marionette template compilation
+    Marionette.TemplateCache.prototype.compileTemplate = function(rawTemplate, options) {
+      // use Handlebars.js to compile the template
+      return Handlebars.compile(rawTemplate);
+    };
+
+    Handlebars.registerHelper('formatCurrency', function(number){
+      return numeral(number).format('0,0.00');
+    });
+
+    Handlebars.registerHelper('formatNumber', function(number, format){
+      return numeral(number).format(format);
+    });
+
+    var app = new Mn.Application();
+
+    var globalCh = Backbone.Wreqr.radio.channel('global');
+
     var data = {
       choices: [
         {
+          id: 1,
           name: "Plan 1",
           description: "Plan option 1",
           type: "plan",
           cost: 1000,
           carbon: 20494,
           hasModel: true,
-          project: PROJECTS.GROUND_FLOOR[0]
+          project: PROJECTS.GROUND_FLOOR[0],
+          optionId: 0
         },
         {
+          id: 2,
           name: "Plan 2",
           description: "Plan option 2",
           type: "plan",
           cost: 1200,
           carbon: 20494,
           hasModel: true,
-          project: PROJECTS.GROUND_FLOOR[1]
+          project: PROJECTS.GROUND_FLOOR[1],
+          optionId: 1
         },
         {
+          id: 3,
           name: "Roof 1",
           description: "Roof option 1",
           type: "roof",
           cost: 2300,
           carbon: 20393,
           hasModel: true,
-          project: PROJECTS.ROOF[0]
+          project: PROJECTS.ROOF[0],
+          optionId: 0
         },
         {
+          id: 4,
           name: "Roof 2",
           description: "Roof option 2",
           type: "roof",
           cost: 2139,
           carbon: 19348,
           hasModel: true,
-          project: PROJECTS.ROOF[1]
+          project: PROJECTS.ROOF[1],
+          optionId: 1
         },
         {
+          id: 5,
           name: "Windows 1",
           description: "Windows option 1",
           type: "window",
           cost: 1000,
           carbon: 12398,
-          hasModel: false
+          hasModel: false,
+          optionId: 0
         },
         {
+          id: 6,
           name: "Windows 2",
           description: "Windows option 2",
           type: "window",
           cost: 1200,
           carbon: 22398,
-          hasModel: false
+          hasModel: false,
+          optionId: 0
         }
       ]
     };
 
-    var dataTypes = _(data.choices).groupBy(function(item){
-      return item.type;
-    });
-
     var designChoices = new Backbone.Collection(data.choices, {parse: true});
     var myDesignChoices = new Backbone.Collection();
+    myDesignChoices.add(designChoices.get(1));
 
     var planChoices = new Backbone.Collection(designChoices.where({type: "plan"}), {parse: true});
     var roofChoices = new Backbone.Collection(designChoices.where({type: "roof"}), {parse: true});
@@ -78,61 +104,45 @@
       'window': windowChoices
     };
 
-    var BaseView = Backbone.View.extend({
-      render: function(){
-        var data = this.model ? this.model.toJSON() : {};
-        this.$el.html(this.template(data));
-        return this;
+    var OptionView = Backbone.Marionette.ItemView.extend({
+      template: '#option-template',
+      triggers: {
+        'click input': {
+          event: 'option:select',
+          preventDefault: false
+        }
+      },
+      serializeData: function(){
+        var data = this.model.toJSON();
+        data.isSelected = this.getOption('isSelected');
+        return data;
       }
     });
 
-    var TabView = BaseView.extend({
-      el: ".design-choices-tabs",
-      events: {
-        'click a': function(e){
-          this.trigger('tabSelect', $(e.currentTarget).attr('href').substr(1));
-        }
+    var OptionsView = Backbone.Marionette.CollectionView.extend({
+      childView: OptionView,
+      childEvents: {
+        'option:select': 'optionSelected'
       },
-      render: function(){
-
+      childViewOptions: function(model){
+        return {
+          model: model,
+          isSelected: this.getOption('selectedOption') == model
+        };
+      },
+      optionSelected: function(args){
+        this.trigger('optionSelected', args.model);
       }
     });
 
-    var OptionsView = BaseView.extend({
-      template: Handlebars.compile($('#options-template').html()),
-      initialize: function(options){
-        this.selectedOption = options.selectedOption;
-      },
-      events: {
-        'click input': 'optionSelected'
-      },
-      optionSelected: function(e){
-        var optionName = $(e.currentTarget).val();
-        var selectedOption = this.collection.find(function(option){
-          return option.get('name') == optionName;
-        });
-        this.trigger('optionSelected', selectedOption);
-      },
-      render: function(){
-        if (this.collection) {
-          this.$el.html(this.template(this.collection.toJSON()));
-        }
-        if (this.selectedOption) {
-          this.$('[value="'+this.selectedOption.get('type')+'"]').click();
-        }
-
-        return this;
-      }
+    var ChoiceInfoView = Backbone.Marionette.ItemView.extend({
+      template: '#choice-info-template'
     });
 
-    var ChoiceInfoView = BaseView.extend({
-      template: Handlebars.compile($('#choice-info-template').html())
-    });
-
-    var SummaryView = BaseView.extend({
-      template: Handlebars.compile($('#summary-template').html()),
-      initialize: function(){
-        this.listenTo(this.collection, 'add', this.render);
+    var SummaryView = Backbone.Marionette.ItemView.extend({
+      template: '#summary-template',
+      collectionEvents: {
+        add: 'render'
       },
       serializeData: function(){
         var data = {
@@ -142,61 +152,85 @@
         this.collection.each(function(option){
           data.cost += option.get('cost');
           data.carbon += option.get('carbon');
+          data[option.get('type')] = option.toJSON();
         });
 
         return data;
-      },
-      render: function(){
-        this.$el.html(this.template(this.serializeData()));
-        return this;
       }
     });
 
-    var choiceInfoView = new ChoiceInfoView();
-    $('#choice-info').html(choiceInfoView.render().el);
+    var MainView = Backbone.Marionette.LayoutView.extend({
+      el: "#main",
+      template: false,
+      regions: {
+        optionsRegion: '#options-panel',
+        viewerRegion: '#viewer',
+        choiceInfoRegion: '#choice-info',
+        summaryRegion: '#summary-panel'
+      },
+      events: {
+        'click .nav-tabs a': function(e){
+          this.tabSelected($(e.currentTarget).attr('href').substr(1));
+        }
+      },
+      tabSelected: function(tab){
+        var selectedOption = myDesignChoices.find(function(option){
+          return option.get('type') == tab;
+        });
+        var optionsView = new OptionsView({
+          collection: collectionTabMap[tab],
+          selectedOption: selectedOption
+        });
+        this.optionsRegion.show(optionsView);
+        this.listenTo(optionsView, 'optionSelected', function(option){
+          this.choiceInfoRegion.show(new ChoiceInfoView({model: option}));
+          var sameTypeChoices = myDesignChoices.filter(function(choice){
+            return choice.get('type') == option.get('type');
+          });
+          myDesignChoices.remove(sameTypeChoices);
+          myDesignChoices.add(option);
 
-    App.optionsView = new OptionsView({collection: planChoices});
-    App.optionsView.$el.appendTo("#options-panel");
-    App.optionsView.render();
-    App.optionsView.on('optionSelected', function(option){
-      var choiceInfoView = new ChoiceInfoView({model: option});
-      $('#choice-info').html(choiceInfoView.render().el);
+          var planChoice = myDesignChoices.find(function(option){
+            return option.get('type') == 'plan';
+          });
+          options[0] = planChoice ? planChoice.get('optionId') : 0;
+          var roofChoice = myDesignChoices.find(function(option){
+            return option.get('type') == 'roof';
+          });
+          options[2] = roofChoice ? roofChoice.get('optionId') : 0;
+          var windowChoice = myDesignChoices.find(function(option){
+            return option.get('type') == 'window';
+          });
+          options[1] = windowChoice ? windowChoice.get('optionId') : 0;
 
-      var sameTypeChoices = myDesignChoices.filter(function(choice){
-        return choice.get('type') == option.get('type');
-      });
-      myDesignChoices.remove(sameTypeChoices);
-      myDesignChoices.add(option);
+          focus = tabToFocus(option.get('type'));
+          update();
+        });
+        focus = tabToFocus(tab);
+        if (window.threedView) {
+          update();
+          setCamera();
+        }
+      },
+      onRender: function(){
+        this.summaryRegion.show(new SummaryView({collection: myDesignChoices}));
+        this.tabSelected('plan');
+      }
     });
 
-    App.tabView = new TabView();
-    App.tabView.on('tabSelect', function(tab){
-      var selectedOption = myDesignChoices.find(function(option){
-        return option.get('type') == tab;
-      });
-      var optionsView = new OptionsView({
-        collection: collectionTabMap[tab],
-        selectedOption: selectedOption
-      });
-      $('#options-panel').html(optionsView.render().el);
-/* START MIRW hack */
-      focus = tabToFocus(tab);
-      update();
-      setCamera();
-/* END MIRW hack */
+    app.mainView = new MainView();
+    app.on('start', function(){
+      app.mainView.render();
     });
 
-    App.summaryView = new SummaryView({collection: myDesignChoices});
-    $('#summary-panel').html(App.summaryView.render().el);
+    app.start();
   });
-
-  window.App = App;
 
   function tabToFocus(tab) {
     return {
       'plan': 0,
       'roof': 2,
-      'window': 2
+      'window': 1
     }[tab];
   }
 
@@ -227,16 +261,10 @@
         threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
       }
     } else {
-  /*
-      if (options[1] == 0) {
-        threedView.showProjectGray(PROJECTS.FIRST_FLOOR[0]);
-      } else {
-  */
-        threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
-  //    }
+      threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
     }
   
-    if (focus >= 2) {
+    if (focus >= 1) {
       if (options[2] == 0) {
         threedView.showProject(PROJECTS.ROOF[0]);
         threedView.hideProject(PROJECTS.ROOF[1]);
@@ -248,23 +276,17 @@
         threedView.hideProject(PROJECTS.ROOF[1]);
       }
     } else {
-  /*
-      if (options[2] == 0) {
-        threedView.showProjectGray(PROJECTS.ROOF[0]);
-        threedView.hideProject(PROJECTS.ROOF[1]);
-      } else if (options[2] == 1) {
-        threedView.hideProject(PROJECTS.ROOF[0]);
-        threedView.showProjectGray(PROJECTS.ROOF[1]);
-      } else {
-  */
-        threedView.hideProject(PROJECTS.ROOF[0]);
-        threedView.hideProject(PROJECTS.ROOF[1]);
-  //    }
+      threedView.hideProject(PROJECTS.ROOF[0]);
+      threedView.hideProject(PROJECTS.ROOF[1]);
     }
   }
   
   function setCamera() {
-    threedView.setCamera({x: -2000, y: 0, z: 12000 + focus * 3000}, {x: 0.2, y: 0, z: -0.98}, 16000);
+    if (focus == 1) {
+      threedView.setCamera({x: -10000, y: 0, z: 0}, {x: 0.98, y: 0, z: -0.2}, 10000);
+    } else {
+      threedView.setCamera({x: -2000, y: 0, z: 10000 + focus * 3000}, {x: 0.2, y: 0, z: -0.98}, 16000);
+    }
   }
   
   Global.onInitialized = function() {

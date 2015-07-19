@@ -1,10 +1,4 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
-<html>
-  <head>
-        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-        <meta content="utf-8" http-equiv="encoding">
-        <title>Viewer</title>
 <html>
 <head>
     <meta charset="utf-8">
@@ -20,12 +14,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash-compat/3.10.0/lodash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.1/backbone.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.marionette/2.4.2/backbone.marionette.js"></script>
     <script src="bimviews/js/3dview.js"></script>
     <script src="bimviews/js/projects.js"></script>
     <script src="bimviews/js/app.js"></script>
 </head>
 <body>
-<div class="container">
+<div id="main" class="container">
     <div class="design-choices-tabs">
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" role="tablist">
@@ -42,16 +38,16 @@
     </div>
 
     <div class="panel panel-default col-md-3">
-        <div id="options-panel" class="panel-body">
+        <div class="panel-body">
+            <div id="options-panel"></div>
         </div>
     </div>
     <div class="panel panel-default col-md-6">
         <div class="indexStatus statusWrapper">
-                <div class="alert status">
-                        <div class="message"></div>
-                </div>
+            <div class="alert status">
+                <div class="message"></div>
+            </div>
         </div>
-
         <div class="panel-body">
             <div id="threedview" style="width: 100%; height: 400px"></div>
             <div id="choice-info" class="choice-info">
@@ -65,14 +61,10 @@
     </div>
 </div>
 
-<script type="x-handlebars-template" id="options-template">
-    {{#each this}}
-    <div>
-        <label>
-            <input type="radio" name="design" value="{{name}}"/> {{name}}
-        </label>
-    </div>
-    {{/each}}
+<script type="x-handlebars-template" id="option-template">
+    <label>
+        <input type="radio" name="design" value="{{name}}" {{#if isSelected}}checked="checked"{{/if}}"/> {{name}}
+    </label>
 </script>
 
 <script type="x-handlebars-template" id="choice-info-template">
@@ -89,11 +81,11 @@
         </tr>
         <tr>
             <th>Cost</th>
-            <td>{{cost}}</td>
+            <td>£{{formatCurrency cost}}</td>
         </tr>
         <tr>
             <th>Carbon footprint</th>
-            <td>{{carbon}}</td>
+            <td>{{formatNumber carbon '0,0.000'}}</td>
         </tr>
     </table>
 </script>
@@ -102,12 +94,24 @@
     <h2>Summary</h2>
     <table class="table">
         <tr>
+            <th>Plan</th>
+            <td>{{#if plan}}{{plan.name}}{{else}}Not yet chosen{{/if}}</td>
+        </tr>
+        <tr>
+            <th>Roof</th>
+            <td>{{#if roof}}{{roof.name}}{{else}}Not yet chosen{{/if}}</td>
+        </tr>
+        <tr>
+            <th>Window</th>
+            <td>{{#if window}}{{window.name}}{{else}}Not yet chosen{{/if}}</td>
+        </tr>
+        <tr>
             <th>Total</th>
-            <td>{{cost}}</td>
+            <td>£{{formatCurrency cost}}</td>
         </tr>
         <tr>
             <th>Carbon Footprint</th>
-            <td>{{carbon}}</td>
+            <td>{{formatNumber carbon '0,0.000'}}</td>
         </tr>
     </table>
 </script>
