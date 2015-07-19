@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+	<base href="/"/>
+	<title>Viewer</title>
+  </head>
+  <body style="margin: 0; padding: 0">
+  	<div class="indexStatus statusWrapper">
+		<div class="alert status">
+			<div class="message"></div>
+		</div>
+  	</div>
+	<div id="threedview" style="width: 800px; height: 400px"></div>
+	<script src="bimviews/js/3dview.js"></script>
+	<script src="bimviews/js/projects.js"></script>
+	<script type="text/javascript">
+
+function setCamera() {
+	threedView.setCamera({x: -2000, y: 0, z: 12000 + focus * 3000}, {x: 0.2, y: 0, z: -0.98}, 16000);
+}
+
+Global.onInitialized = function() {
+	threedView = new ThreeDView($("#threedview"));
+	threedView.load(true).done(function() {
+		threedView.loadProject(PROJECTS.GROUND_FLOOR[0]);
+		threedView.loadProject(PROJECTS.FIRST_FLOOR[0]);
+		threedView.loadProject(PROJECTS.ROOF[0]);
+		threedView.showProject(PROJECTS.GROUND_FLOOR[0]);
+		threedView.showProject(PROJECTS.FIRST_FLOOR[0]);
+		threedView.showProject(PROJECTS.ROOF[0]);
+	});
+}
+	</script>
+  </body>
+</html>

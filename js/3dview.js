@@ -65,6 +65,7 @@ function loadResources() {
 		    			jsToLoad = jsToLoad.concat([
 		    	   		    baseJsDir + "bimsurfer/api/BIMSURFER.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/lib/scenejs/scenejs.js?_v=" + Global.version, 
+		    	   		    baseJsDir + "bimsurfer/lib/scenejs/plugins/node/effects/stereo.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/api/SceneJS.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/api/Constants.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/api/ProgressLoader.js?_v=" + Global.version, 
@@ -367,7 +368,7 @@ function ThreeDView(containerDiv) {
 	o.loadedOids = {};
 	o.models = {};
 
-	this.load = function(){
+	this.load = function(stereo){
 		o.containerDiv.on("contextmenu", function(e){
 			e.preventDefault();
 		});
@@ -376,7 +377,7 @@ function ThreeDView(containerDiv) {
 		o.viewer = new BIMSURFER.Viewer(Global.bimServerApi, o.containerDiv);
 		o.viewer.loadScene(function(){
 			promise.fire();
-		}, {useCapture: true});
+		}, {stereo: stereo});
 		return promise;
 	};
 
