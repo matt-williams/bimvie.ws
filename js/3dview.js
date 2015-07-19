@@ -582,6 +582,15 @@ function ThreeDView(containerDiv) {
 		}
 	};
 
+	this.moveCamera = function(x, y, z) {
+		var control = o.viewer.controls["BIMSURFER.Control.PickFlyOrbit"][0];
+		var view = control.obtainView();
+		view.eye.x += x;
+		view.eye.y += y;
+		view.eye.z += z;
+		control.restoreView(view);
+	}
+
 	var loadRevision = function(poid, roid, schema){
 		Global.bimServerApi.getModel(poid, roid, schema, false, function(model){
 			o.models[roid] = model;

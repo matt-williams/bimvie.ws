@@ -29,14 +29,18 @@ var focus = 0;
 var options = [0, -1, -1];
 
 function up() {
+	var oldFocus = focus;
 	focus = (focus < 2) ? focus + 1 : 2;
 	options[focus] = options[focus] == -1 ? 0 : options[focus];
 	update();
+	threedView.moveCamera(0, 0, (focus - oldFocus) * 4000.0);
 }
 
 function down() {
+	var oldFocus = focus;
 	focus = (focus > 0) ? focus - 1 : 0;
 	update();
+	threedView.moveCamera(0, 0, (focus - oldFocus) * 4000.0);
 }
 
 function choose(choice) {
