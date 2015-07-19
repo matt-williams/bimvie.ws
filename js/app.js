@@ -84,7 +84,7 @@
           cost: 1200,
           carbon: 22398,
           hasModel: false,
-          optionId: 1
+          optionId: 0
         }
       ]
     };
@@ -197,16 +197,20 @@
           var roofChoice = myDesignChoices.find(function(option){
             return option.get('type') == 'roof';
           });
-          options[1] = roofChoice ? roofChoice.get('optionId') : 0;
+          options[2] = roofChoice ? roofChoice.get('optionId') : 0;
           var windowChoice = myDesignChoices.find(function(option){
             return option.get('type') == 'window';
           });
-          options[2] = windowChoice ? windowChoice.get('optionId') : 0;
+          options[1] = windowChoice ? windowChoice.get('optionId') : 0;
 
           focus = tabToFocus(option.get('type'));
           update();
-          setCamera();
         });
+        focus = tabToFocus(tab);
+        if (window.threedView) {
+          update();
+          setCamera();
+        }
       },
       onRender: function(){
         this.summaryRegion.show(new SummaryView({collection: myDesignChoices}));
@@ -226,7 +230,7 @@
     return {
       'plan': 0,
       'roof': 2,
-      'window': 2
+      'window': 1
     }[tab];
   }
 
@@ -257,16 +261,10 @@
         threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
       }
     } else {
-  /*
-      if (options[1] == 0) {
-        threedView.showProjectGray(PROJECTS.FIRST_FLOOR[0]);
-      } else {
-  */
-        threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
-  //    }
+      threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
     }
   
-    if (focus >= 2) {
+    if (focus >= 1) {
       if (options[2] == 0) {
         threedView.showProject(PROJECTS.ROOF[0]);
         threedView.hideProject(PROJECTS.ROOF[1]);
@@ -278,23 +276,17 @@
         threedView.hideProject(PROJECTS.ROOF[1]);
       }
     } else {
-  /*
-      if (options[2] == 0) {
-        threedView.showProjectGray(PROJECTS.ROOF[0]);
-        threedView.hideProject(PROJECTS.ROOF[1]);
-      } else if (options[2] == 1) {
-        threedView.hideProject(PROJECTS.ROOF[0]);
-        threedView.showProjectGray(PROJECTS.ROOF[1]);
-      } else {
-  */
-        threedView.hideProject(PROJECTS.ROOF[0]);
-        threedView.hideProject(PROJECTS.ROOF[1]);
-  //    }
+      threedView.hideProject(PROJECTS.ROOF[0]);
+      threedView.hideProject(PROJECTS.ROOF[1]);
     }
   }
   
   function setCamera() {
-    threedView.setCamera({x: -2000, y: 0, z: 12000 + focus * 3000}, {x: 0.2, y: 0, z: -0.98}, 16000);
+    if (focus == 1) {
+      threedView.setCamera({x: -10000, y: 0, z: 0}, {x: 0.98, y: 0, z: -0.2}, 10000);
+    } else {
+      threedView.setCamera({x: -2000, y: 0, z: 10000 + focus * 3000}, {x: 0.2, y: 0, z: -0.98}, 16000);
+    }
   }
   
   Global.onInitialized = function() {
