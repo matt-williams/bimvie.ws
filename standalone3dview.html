@@ -18,13 +18,8 @@
 	<span onclick="choose(1);">B</span>
 	<div id="threedview" style="width: 400px; height: 400px"></div>
 	<script src="bimviews/js/3dview.js"></script>
+	<script src="bimviews/js/projects.js"></script>
 	<script type="text/javascript">
-var GROUND_FLOOR_A = 1179649;
-var GROUND_FLOOR_B = 1245185;
-var FIRST_FLOOR = 1114113;
-var ROOF_A = 1310721;
-var ROOF_B = 1376257;
-
 var focus = 0;
 var options = [0, -1, -1];
 
@@ -33,14 +28,14 @@ function up() {
 	focus = (focus < 2) ? focus + 1 : 2;
 	options[focus] = options[focus] == -1 ? 0 : options[focus];
 	update();
-	threedView.moveCamera(0, 0, (focus - oldFocus) * 4000.0);
+	setCamera();
 }
 
 function down() {
 	var oldFocus = focus;
 	focus = (focus > 0) ? focus - 1 : 0;
 	update();
-	threedView.moveCamera(0, 0, (focus - oldFocus) * 4000.0);
+	setCamera();
 }
 
 function choose(choice) {
@@ -50,68 +45,76 @@ function choose(choice) {
 
 function update() {
 	if (options[0] == 0) {
-		threedView.showProject(GROUND_FLOOR_A);
-		threedView.hideProject(GROUND_FLOOR_B);
+		threedView.showProject(PROJECTS.GROUND_FLOOR[0]);
+		threedView.hideProject(PROJECTS.GROUND_FLOOR[1]);
 	} else if (options[0] == 1) {
-		threedView.hideProject(GROUND_FLOOR_A);
-		threedView.showProject(GROUND_FLOOR_B);
+		threedView.hideProject(PROJECTS.GROUND_FLOOR[0]);
+		threedView.showProject(PROJECTS.GROUND_FLOOR[1]);
 	} else {
-		threedView.hideProject(GROUND_FLOOR_A);
-		threedView.hideProject(GROUND_FLOOR_B);
+		threedView.hideProject(PROJECTS.GROUND_FLOOR[0]);
+		threedView.hideProject(PROJECTS.GROUND_FLOOR[1]);
 	}
 
 	if (focus >= 1) {
 		if (options[1] == 0) {
-			threedView.showProject(FIRST_FLOOR);
+			threedView.showProject(PROJECTS.FIRST_FLOOR[0]);
 		} else {
-			threedView.hideProject(FIRST_FLOOR);
+			threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
 		}
 	} else {
 /*
 		if (options[1] == 0) {
-			threedView.showProjectGray(FIRST_FLOOR);
+			threedView.showProjectGray(PROJECTS.FIRST_FLOOR[0]);
 		} else {
 */
-			threedView.hideProject(FIRST_FLOOR);
+			threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
 //		}
 	}
 
 	if (focus >= 2) {
 		if (options[2] == 0) {
-			threedView.showProject(ROOF_A);
-			threedView.hideProject(ROOF_B);
+			threedView.showProject(PROJECTS.ROOF[0]);
+			threedView.hideProject(PROJECTS.ROOF[1]);
 		} else if (options[2] == 1) {
-			threedView.hideProject(ROOF_A);
-			threedView.showProject(ROOF_B);
+			threedView.hideProject(PROJECTS.ROOF[0]);
+			threedView.showProject(PROJECTS.ROOF[1]);
 		} else {
-			threedView.hideProject(ROOF_A);
-			threedView.hideProject(ROOF_B);
+			threedView.hideProject(PROJECTS.ROOF[0]);
+			threedView.hideProject(PROJECTS.ROOF[1]);
 		}
 	} else {
 /*
 		if (options[2] == 0) {
-			threedView.showProjectGray(ROOF_A);
-			threedView.hideProject(ROOF_B);
+			threedView.showProjectGray(PROJECTS.ROOF[0]);
+			threedView.hideProject(PROJECTS.ROOF[1]);
 		} else if (options[2] == 1) {
-			threedView.hideProject(ROOF_A);
-			threedView.showProjectGray(ROOF_B);
+			threedView.hideProject(PROJECTS.ROOF[0]);
+			threedView.showProjectGray(PROJECTS.ROOF[1]);
 		} else {
 */
-			threedView.hideProject(ROOF_A);
-			threedView.hideProject(ROOF_B);
+			threedView.hideProject(PROJECTS.ROOF[0]);
+			threedView.hideProject(PROJECTS.ROOF[1]);
 //		}
 	}
 }
 
+function setCamera() {
+	threedView.setCamera({x: -2000, y: 0, z: 12000 + focus * 3000}, {x: 0.2, y: 0, z: -0.98}, 16000);
+}
+
 Global.onInitialized = function() {
 	threedView = new ThreeDView($("#threedview"));
-	threedView.load();
-	threedView.loadProject(GROUND_FLOOR_A);
-	threedView.loadProject(GROUND_FLOOR_B);
-	threedView.loadProject(FIRST_FLOOR);
-	threedView.loadProject(ROOF_A);
-	threedView.loadProject(ROOF_B);
-	update();
+	threedView.load().done(function() {
+		threedView.loadProject(PROJECTS.GROUND_FLOOR[0]);
+		threedView.loadProject(PROJECTS.GROUND_FLOOR[1]);
+		threedView.loadProject(PROJECTS.FIRST_FLOOR[0]);
+		threedView.loadProject(PROJECTS.ROOF[0]);
+		threedView.loadProject(PROJECTS.ROOF[1]);
+		update();
+		window.setTimeout(function() {
+			setCamera();
+		}, 1000);
+	});
 }
 	</script>
   </body>

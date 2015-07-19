@@ -547,6 +547,7 @@ function ThreeDView(containerDiv) {
 	};
 	
 	this.loadProject = function(poid) {
+		console.log("loadProject", poid);
 		o.projectModes[poid] = 2;
 		Global.bimServerApi.call("Bimsie1ServiceInterface", "getProjectByPoid", {poid: poid}, function(project){
 			o.projects[poid] = project;
@@ -582,13 +583,17 @@ function ThreeDView(containerDiv) {
 		}
 	};
 
-	this.moveCamera = function(x, y, z) {
-		var control = o.viewer.controls["BIMSURFER.Control.PickFlyOrbit"][0];
-		var view = control.obtainView();
-		view.eye.x += x;
-		view.eye.y += y;
-		view.eye.z += z;
-		control.restoreView(view);
+	this.setCamera = function(eye, dir, l, up) {
+		var controls = o.viewer.controls["BIMSURFER.Control.PickFlyOrbit"];
+		if ((controls) && (controls.length > 0)) {
+			var control = controls[0];
+			var view = control.obtainView();
+			control.currentPivot = vecSubtract(view.eye, vecNegate(vecMultiplyScalar(view.dir, l)));
+			view.eye = eye || view.eye;
+			view.dir = dir || view.dir;
+			view.up = up || view.up;
+			control.restoreView(view);
+		}
 	}
 
 	var loadRevision = function(poid, roid, schema){
