@@ -214,12 +214,9 @@
       }
     });
 
+    app.mainView = new MainView();
     app.on('start', function(){
-      app.mainRegion = new Backbone.Marionette.Region({
-        el: '#main'
-      });
-      app.mainView = new MainView();
-      app.mainRegion.show(app.mainView);
+      app.mainView.render();
     });
 
     app.start();
