@@ -179,6 +179,11 @@
         selectedOption: selectedOption
       });
       $('#options-panel').html(optionsView.render().el);
+/* START MIRW hack */
+      focus = tabToFocus(tab);
+      update();
+      setCamera();
+/* END MIRW hack */
     });
 
     App.summaryView = new SummaryView({collection: myDesignChoices});
@@ -187,23 +192,16 @@
 
   window.App = App;
 
+  function tabToFocus(tab) {
+    return {
+      'plan': 0,
+      'roof': 2,
+      'window': 2
+    }[tab];
+  }
+
   var focus = 0;
-  var options = [0, -1, -1];
-  
-  function up() {
-    var oldFocus = focus;
-    focus = (focus < 2) ? focus + 1 : 2;
-    options[focus] = options[focus] == -1 ? 0 : options[focus];
-    update();
-    setCamera();
-  }
-  
-  function down() {
-    var oldFocus = focus;
-    focus = (focus > 0) ? focus - 1 : 0;
-    update();
-    setCamera();
-  }
+  var options = [0, 0, 0];
   
   function choose(choice) {
     options[focus] = choice;
