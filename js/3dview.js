@@ -66,6 +66,7 @@ function loadResources() {
 		    	   		    baseJsDir + "bimsurfer/api/BIMSURFER.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/lib/scenejs/scenejs.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/lib/scenejs/plugins/node/effects/stereo.js?_v=" + Global.version, 
+		    	   		    baseJsDir + "bimsurfer/lib/scenejs/plugins/node/cameras/orbit.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/api/SceneJS.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/api/Constants.js?_v=" + Global.version, 
 		    	   		    baseJsDir + "bimsurfer/api/ProgressLoader.js?_v=" + Global.version, 
@@ -374,10 +375,11 @@ function ThreeDView(containerDiv) {
 		});
 
 		var promise = new Promise();
-		o.viewer = new BIMSURFER.Viewer(Global.bimServerApi, o.containerDiv);
+		var options = {stereo: stereo};
+		o.viewer = new BIMSURFER.Viewer(Global.bimServerApi, o.containerDiv, options);
 		o.viewer.loadScene(function(){
 			promise.fire();
-		}, {stereo: stereo});
+		}, options);
 		return promise;
 	};
 
