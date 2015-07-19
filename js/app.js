@@ -97,7 +97,6 @@
     var roofChoices = new Backbone.Collection(designChoices.where({type: "roof"}), {parse: true});
     var windowChoices = new Backbone.Collection(designChoices.where({type: "window"}), {parse: true});
 
-
     var collectionTabMap = {
       'plan': planChoices,
       'roof': roofChoices,
@@ -168,49 +167,76 @@
         choiceInfoRegion: '#choice-info',
         summaryRegion: '#summary-panel'
       },
+      ui: {
+        'nextBtn': 'button.next-btn'
+      },
       events: {
         'click .nav-tabs a': function(e){
-          this.tabSelected($(e.currentTarget).attr('href').substr(1));
-        }
+          this.tabSelected($(e.currentTarget).attr('data-tab'));
+        },
+        'click @ui.nextBtn': 'selectNextTab'
+      },
+      selectNextTab: function(){
+        var nextTabMap = {
+          'plan': 'roof',
+          'roof': 'window'
+        };
+        var nextTab = nextTabMap[this.selectedTab];
+        this.$(".nav-tabs a[data-tab='" + nextTab + "']").click();
       },
       tabSelected: function(tab){
+        this.selectedTab = tab;
         var selectedOption = myDesignChoices.find(function(option){
           return option.get('type') == tab;
         });
+
+        if (!selectedOption) {
+          selectedOption = designChoices.find(function(option){
+            return option.get('type') == tab;
+          });
+          this.optionSelected(selectedOption);
+        }
+
+        this.choiceInfoRegion.show(new ChoiceInfoView({model: selectedOption}));
+
         var optionsView = new OptionsView({
           collection: collectionTabMap[tab],
           selectedOption: selectedOption
         });
         this.optionsRegion.show(optionsView);
-        this.listenTo(optionsView, 'optionSelected', function(option){
-          this.choiceInfoRegion.show(new ChoiceInfoView({model: option}));
-          var sameTypeChoices = myDesignChoices.filter(function(choice){
-            return choice.get('type') == option.get('type');
-          });
-          myDesignChoices.remove(sameTypeChoices);
-          myDesignChoices.add(option);
-
-          var planChoice = myDesignChoices.find(function(option){
-            return option.get('type') == 'plan';
-          });
-          options[0] = planChoice ? planChoice.get('optionId') : 0;
-          var roofChoice = myDesignChoices.find(function(option){
-            return option.get('type') == 'roof';
-          });
-          options[2] = roofChoice ? roofChoice.get('optionId') : 0;
-          var windowChoice = myDesignChoices.find(function(option){
-            return option.get('type') == 'window';
-          });
-          options[1] = windowChoice ? windowChoice.get('optionId') : 0;
-
-          focus = tabToFocus(option.get('type'));
-          update();
-        });
+        this.listenTo(optionsView, 'optionSelected', this.optionSelected);
         focus = tabToFocus(tab);
         if (window.threedView) {
           update();
           setCamera();
         }
+
+        this.ui.nextBtn.prop('disabled', tab == 'window');
+        
+      },
+      optionSelected: function(option){
+        this.choiceInfoRegion.show(new ChoiceInfoView({model: option}));
+        var sameTypeChoices = myDesignChoices.filter(function(choice){
+          return choice.get('type') == option.get('type');
+        });
+        myDesignChoices.remove(sameTypeChoices);
+        myDesignChoices.add(option);
+
+        var planChoice = myDesignChoices.find(function(option){
+          return option.get('type') == 'plan';
+        });
+        options[0] = planChoice ? planChoice.get('optionId') : 0;
+        var roofChoice = myDesignChoices.find(function(option){
+          return option.get('type') == 'roof';
+        });
+        options[2] = roofChoice ? roofChoice.get('optionId') : 0;
+        var windowChoice = myDesignChoices.find(function(option){
+          return option.get('type') == 'window';
+        });
+        options[1] = windowChoice ? windowChoice.get('optionId') : 0;
+
+        focus = tabToFocus(option.get('type'));
+        update();
       },
       onRender: function(){
         this.summaryRegion.show(new SummaryView({collection: myDesignChoices}));
@@ -236,12 +262,12 @@
 
   var focus = 0;
   var options = [0, 0, 0];
-  
+
   function choose(choice) {
     options[focus] = choice;
     update()
   }
-  
+
   function update() {
     if (options[0] == 0) {
       threedView.showProject(PROJECTS.GROUND_FLOOR[0]);
@@ -253,7 +279,7 @@
       threedView.hideProject(PROJECTS.GROUND_FLOOR[0]);
       threedView.hideProject(PROJECTS.GROUND_FLOOR[1]);
     }
-  
+
     if (focus >= 1) {
       if (options[1] == 0) {
         threedView.showProject(PROJECTS.FIRST_FLOOR[0]);
@@ -263,7 +289,7 @@
     } else {
       threedView.hideProject(PROJECTS.FIRST_FLOOR[0]);
     }
-  
+
     if (focus >= 1) {
       if (options[2] == 0) {
         threedView.showProject(PROJECTS.ROOF[0]);
@@ -280,7 +306,7 @@
       threedView.hideProject(PROJECTS.ROOF[1]);
     }
   }
-  
+
   function setCamera() {
     if (focus == 1) {
       threedView.setCamera({x: -10000, y: 0, z: 0}, {x: 0.98, y: 0, z: -0.2}, 10000);
@@ -288,7 +314,7 @@
       threedView.setCamera({x: -2000, y: 0, z: 10000 + focus * 3000}, {x: 0.2, y: 0, z: -0.98}, 16000);
     }
   }
-  
+
   Global.onInitialized = function() {
     threedView = new ThreeDView($("#threedview"));
     threedView.load().done(function() {
